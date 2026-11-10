@@ -33,9 +33,21 @@ matrix:
     - jdk: openjdk-ea
       env: JACOCO_SKIP=true
 
+# Travis' install-jdk can no longer apt-install bellsoft-java14 on its current image;
+# fetch the same BellSoft JDK 14 tarball directly for that leg.
+before_install:
+  - |
+    if [ "$TRAVIS_JDK_VERSION" = "openjdk14" ] && [ ! -x "$JAVA_HOME/bin/java" ]; then
+      curl -sSfL -o /tmp/jdk14.tar.gz https://download.bell-sw.com/java/14.0.2+13/bellsoft-jdk14.0.2+13-linux-amd64.tar.gz
+      mkdir -p /tmp/jdk14 && tar -xzf /tmp/jdk14.tar.gz -C /tmp/jdk14 --strip-components=1
+      export JAVA_HOME=/tmp/jdk14
+      export PATH="$JAVA_HOME/bin:$PATH"
+      java -version
+    fi
+
 # --no-transfer-progress requires Maven 3.6.1+. Otherwise use --batch-mode
 script:
   - mvn -V --no-transfer-progress
-
-after_success:
-  - mvn -V --no-transfer-progress clean cobertura:cobertura coveralls:report -Ptravis-cobertura
+  - |
+    echo "Skipped tests and their reasons (from target/surefire-reports):"
+    awk '/<testcase/{tc=$0} /<skipped/{print FILENAME ": " tc " " $0}' target/surefire-reports/TEST-*.xml

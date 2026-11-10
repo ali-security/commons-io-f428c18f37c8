@@ -619,7 +619,7 @@ public class BOMInputStreamTest {
     public void testReadXmlWithBOMUcs4() throws Exception {
         // UCS-4 is BE or LE?
         // Hm: ISO-10646-UCS-4 is not supported on Oracle 1.6.0_31
-        assumeTrue(Charset.isSupported("ISO-10646-UCS-4"));
+        assumeTrue(Charset.isSupported("ISO-10646-UCS-4"), "JVM does not support the ISO-10646-UCS-4 charset");
         final byte[] data = "<?xml version=\"1.0\" encoding=\"ISO-10646-UCS-4\"?><X/>".getBytes("ISO-10646-UCS-4");
         // XML parser does not know what to do with UTF-32
         try (BOMInputStream in = new BOMInputStream(createUtf32BeDataStream(data, true), ByteOrderMark.UTF_32BE)) {
